@@ -27,7 +27,7 @@ export default {
         console.log(this);
 
         this.$http
-          .get(settings.request_url +"game/"+ this.summonerName)
+          .get(settings.request_url + "game/" + this.summonerName)
           .then(function (response) {
             console.log(response);
             if (response.status == "200") {
