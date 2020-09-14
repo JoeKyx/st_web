@@ -38,7 +38,7 @@ Vue.use(vueNativeSock, settings.websocket_url, {
 });
 
 export default {
-   data() {
+  data() {
     return {
       game: false,
       spellnames: [],
@@ -48,6 +48,10 @@ export default {
     };
   },
   mounted() {
+    annyang.addCallback("result", function (phrases) {
+      console.log("Speech recognized. Possible sentences said:");
+      console.log(phrases);
+    });
     console.log("Created");
     console.log(responsiveVoice);
     responsiveVoice.OnVoiceReady = function () {
@@ -65,21 +69,6 @@ export default {
       }
     };
 
-    if (annyang) {
-      // Let's define our first command. First the text we expect, and then the function it should call
-      var commands = {
-        show: function () {
-          console.log("show tps report");
-        },
-      };
-
-      // Add our commands to annyang
-      annyang.addCommands(commands);
-
-      // Start listening. You can call this here, or attach this call to an event, button, etc.
-      annyang.start();
-    }
-
     this.$options.sockets.onmessage = (data) => {
       console.log(data.data);
       let message = JSON.parse(data.data);
@@ -91,6 +80,41 @@ export default {
         var indexBlue = 0;
         var indexRed = 1;
         this.game.participants.forEach((participant) => {
+          if (annyang) {
+            // Let's define our first command. First the text we expect, and then the function it should call
+            var key1 =
+              participant.champion.name +
+              " " +
+              this.game.spellnames[participant.spell1Id];
+            var key2 =
+              participant.champion.name +
+              " " +
+              this.game.spellnames[participant.spell2Id];
+            console.log(key1);
+            var commands = {
+              [key1]: () => {
+                this.timeSpell(
+                  this.game.gameId,
+                  participant.champion,
+                  participant.spell1Id
+                );
+              },
+              [key2]: () => {
+                this.timeSpell(
+                  this.game.gameId,
+                  participant.champion,
+                  participant.spell2Id
+                );
+              },
+            };
+
+            // Add our commands to annyang
+            annyang.addCommands(commands);
+
+            // Start listening. You can call this here, or attach this call to an event, button, etc.
+            annyang.start();
+          }
+
           if (participant.teamId == 100) {
             this.sortedParticipants[indexBlue] = participant;
             indexBlue = indexBlue + 2;
@@ -98,15 +122,19 @@ export default {
             this.sortedParticipants[indexRed] = participant;
             indexRed = indexRed + 2;
           }
-          setInterval( () => {
+          setInterval(() => {
             if (participant.spell1cd > 0) {
               participant.spell1cd--;
               if (participant.spell1cd < 0) {
                 participant.spell1cd = 0;
               }
-              if(participant.spell1cd > 9 && participant.spell1cd < 11) {
-                responsiveVoice.speak(participant.champion.name+"'s " + this.spellnames[participant.spell1Id]+" is up in 10 seconds ");
-
+              if (participant.spell1cd > 9 && participant.spell1cd < 11) {
+                responsiveVoice.speak(
+                  participant.champion.name +
+                    "'s " +
+                    this.spellnames[participant.spell1Id] +
+                    " is up in 10 seconds "
+                );
               }
             }
             if (participant.spell2cd > 0) {
@@ -114,19 +142,32 @@ export default {
               if (participant.spell2cd < 0) {
                 participant.spell2cd = 0;
               }
-                if(participant.spell2cd > 9 && participant.spell2cd < 11) {
-                  responsiveVoice.speak(participant.champion.name+"'s " + this.spellnames[participant.spell2Id]+" is up in 10 seconds ");
+              if (participant.spell2cd > 9 && participant.spell2cd < 11) {
+                responsiveVoice.speak(
+                  participant.champion.name +
+                    "'s " +
+                    this.spellnames[participant.spell2Id] +
+                    " is up in 10 seconds "
+                );
               }
             }
           }, 1000);
         });
+        if (annyang) {
+          annyang.start();
+        }
       } else if (message.action == "spell") {
         console.log(message);
 
         this.game.participants.forEach((participant) => {
           if (participant.championId == message.champKey) {
             console.log(this.spellnames);
-            responsiveVoice.speak("Timed " + this.spellnames[message.spellId] +" for " +participant.champion.name);
+            responsiveVoice.speak(
+              "Timed " +
+                this.spellnames[message.spellId] +
+                " for " +
+                participant.champion.name
+            );
 
             if (participant.spell1Id == message.spellId) {
               participant.spell1cd = message.cooldown;
@@ -138,7 +179,7 @@ export default {
       }
     };
   },
- 
+
   methods: {
     timeSpell(gameId, champion, spellId) {
       const req = {
@@ -148,7 +189,7 @@ export default {
         spellId: spellId,
       };
       this.$socket.sendObj(req);
-      console.log("Sent: " + req);
+      console.log(req);
     },
     createConnectJson(summonerName) {
       const sumJson = {

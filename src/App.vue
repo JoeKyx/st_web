@@ -32,22 +32,16 @@ body {
   height: 100%;
 }
 
-#app {
-  background-image: url("assets/Aatrox.jpg");
-  background-size: cover;
-  background-position: bottom;
-  transition: 0.4s;
-}
 
 main {
   min-height: 100vh;
   padding: 25px;
 
-  background-image: linear-gradient(
+/*  background-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.25),
     rgba(0, 0, 0, 0.75)
-  );
+  );*/
 }
 
 .blueTeam {
@@ -79,4 +73,20 @@ main {
   text-align: center;
   text-shadow: 1px 3px rgba(0, 0, 0, 0.25);
 }
+
+
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+ /*  background-image: url("assets/Aatrox.jpg");*/
+  background-size: cover;
+  background-position: bottom;
+  transition: 0.4s;
+}
+
+@import'~bootstrap/dist/css/bootstrap.css'
+
 </style>
